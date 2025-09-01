@@ -31,7 +31,7 @@ enum planck_layers {
 #define LOWER MO(_LOWER)
 #define RAISE MO(_RAISE)
 
-#define DUAL_FUNC_0 LT(3, KC_K)
+#define DUAL_FUNC_0 LT(10, KC_I)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_BASE] = LAYOUT_planck_grid(
@@ -106,6 +106,8 @@ void keyboard_post_init_user(void) {
 }
 
 const uint8_t PROGMEM ledmap[][RGB_MATRIX_LED_COUNT][3] = {
+    [1] = { {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204}, {43,218,204} },
+
     [3] = { {235,218,204}, {235,218,204}, {91,218,204}, {91,218,204}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {160,192,138}, {160,192,138}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0} },
 
     [4] = { {74,255,255}, {188,255,255}, {74,255,255}, {160,192,138}, {0,0,0}, {0,0,0}, {0,0,0}, {163,255,255}, {139,255,255}, {139,255,255}, {139,255,255}, {163,255,255}, {188,255,255}, {188,255,255}, {188,255,255}, {160,192,138}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {139,255,255}, {139,255,255}, {139,255,255}, {163,255,255}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {41,255,255}, {139,255,255}, {139,255,255}, {139,255,255}, {163,255,255}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, {139,255,255}, {163,255,255}, {163,255,255}, {163,255,255} },
@@ -138,6 +140,9 @@ bool rgb_matrix_indicators_user(void) {
   }
   if (!keyboard_config.disable_layer_led) { 
     switch (biton32(layer_state)) {
+      case 1:
+        set_layer_color(1);
+        break;
       case 3:
         set_layer_color(3);
         break;
@@ -196,24 +201,42 @@ uint8_t dance_step(tap_dance_state_t *state) {
 }
 
 
+void on_dance_0(tap_dance_state_t *state, void *user_data);
 void dance_0_finished(tap_dance_state_t *state, void *user_data);
 void dance_0_reset(tap_dance_state_t *state, void *user_data);
+
+void on_dance_0(tap_dance_state_t *state, void *user_data) {
+    if(state->count == 3) {
+        tap_code16(KC_WWW_BACK);
+        tap_code16(KC_WWW_BACK);
+        tap_code16(KC_WWW_BACK);
+    }
+    if(state->count > 3) {
+        tap_code16(KC_WWW_BACK);
+    }
+}
 
 void dance_0_finished(tap_dance_state_t *state, void *user_data) {
     dance_state[0].step = dance_step(state);
     switch (dance_state[0].step) {
+        case SINGLE_TAP: register_code16(KC_WWW_BACK); break;
         case SINGLE_HOLD: register_code16(KC_LEFT_GUI); break;
+        case DOUBLE_TAP: register_code16(KC_WWW_BACK); register_code16(KC_WWW_BACK); break;
         case DOUBLE_HOLD: layer_on(4); break;
+        case DOUBLE_SINGLE_TAP: tap_code16(KC_WWW_BACK); register_code16(KC_WWW_BACK);
     }
 }
 
 void dance_0_reset(tap_dance_state_t *state, void *user_data) {
     wait_ms(10);
     switch (dance_state[0].step) {
+        case SINGLE_TAP: unregister_code16(KC_WWW_BACK); break;
         case SINGLE_HOLD: unregister_code16(KC_LEFT_GUI); break;
+        case DOUBLE_TAP: unregister_code16(KC_WWW_BACK); break;
               case DOUBLE_HOLD: 
                 layer_off(4);
                 break;
+        case DOUBLE_SINGLE_TAP: unregister_code16(KC_WWW_BACK); break;
     }
     dance_state[0].step = 0;
 }
@@ -252,7 +275,7 @@ void dance_1_reset(tap_dance_state_t *state, void *user_data) {
 }
 
 tap_dance_action_t tap_dance_actions[] = {
-        [DANCE_0] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, dance_0_finished, dance_0_reset),
+        [DANCE_0] = ACTION_TAP_DANCE_FN_ADVANCED(on_dance_0, dance_0_finished, dance_0_reset),
         [DANCE_1] = ACTION_TAP_DANCE_FN_ADVANCED(on_dance_1, dance_1_finished, dance_1_reset),
 };
 
